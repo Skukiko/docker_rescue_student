@@ -1,0 +1,47 @@
+$ docker compose logs backend --since 70s | tail -8
+backend-1  | INFO:     172.19.0.4:45726 - "GET /items HTTP/1.0" 200 OK
+backend-1  | INFO:     127.0.0.1:59442 - "GET /health HTTP/1.1" 503 Service Unavailable
+backend-1  | INFO:     127.0.0.1:53944 - "GET /health HTTP/1.1" 503 Service Unavailable
+backend-1  | INFO:     127.0.0.1:57628 - "GET /health HTTP/1.1" 503 Service Unavailable
+backend-1  | INFO:     127.0.0.1:47848 - "GET /health HTTP/1.1" 503 Service Unavailable
+backend-1  | INFO:     127.0.0.1:59336 - "GET /health HTTP/1.1" 503 Service Unavailable
+backend-1  | INFO:     127.0.0.1:50380 - "GET /health HTTP/1.1" 503 Service Unavailable
+backend-1  | INFO:     172.19.0.4:48302 - "GET /health HTTP/1.0" 503 Service Unavailable
+
+$ docker inspect --format '{{json .State.Health}}' aci606-rescue-backend-1
+{
+    "Status": "unhealthy",
+    "FailingStreak": 6,
+    "Log": [
+        {
+            "Start": "2026-11-18T15:37:56.900170113Z",
+            "End": "2026-11-18T15:37:57.309938834Z",
+            "ExitCode": 1,
+            "Output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 521, in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 630, in http_response\n    response = self.parent.error(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 559, in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 639, in http_error_default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 503: Service Unavailable\n"
+        },
+        {
+            "Start": "2026-11-18T15:38:07.310922707Z",
+            "End": "2026-11-18T15:38:07.687334028Z",
+            "ExitCode": 1,
+            "Output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 521, in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 630, in http_response\n    response = self.parent.error(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 559, in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 639, in http_error_default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 503: Service Unavailable\n"
+        },
+        {
+            "Start": "2026-11-18T15:38:17.688548691Z",
+            "End": "2026-11-18T15:38:17.987803204Z",
+            "ExitCode": 1,
+            "Output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 521, in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 630, in http_response\n    response = self.parent.error(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 559, in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 639, in http_error_default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 503: Service Unavailable\n"
+        },
+        {
+            "Start": "2026-11-18T15:38:27.98937247Z",
+            "End": "2026-11-18T15:38:28.300904389Z",
+            "ExitCode": 1,
+            "Output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 521, in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 630, in http_response\n    response = self.parent.error(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 559, in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 639, in http_error_default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 503: Service Unavailable\n"
+        },
+        {
+            "Start": "2026-11-18T15:38:38.302163014Z",
+            "End": "2026-11-18T15:38:38.627368917Z",
+            "ExitCode": 1,
+            "Output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 521, in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 630, in http_response\n    response = self.parent.error(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 559, in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 639, in http_error_default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 503: Service Unavailable\n"
+        }
+    ]
+}

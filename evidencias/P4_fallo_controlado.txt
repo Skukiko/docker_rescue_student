@@ -1,0 +1,13 @@
+$ docker compose stop db
+ Container aci606-rescue-db-1 Stopped 
+(esperando 60 s)
+$ curl -sS -o /dev/null -w "frontend / HTTP %{http_code}\n" http://localhost:8080/
+frontend / HTTP 200
+$ curl -sS -w "\nHTTP %{http_code}\n" http://localhost:8080/api/health
+{"detail":"database unavailable: (psycopg2.OperationalError) could not translate host name \"db\" to address: Name or service not known\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"}
+HTTP 503
+$ docker compose ps -a
+NAME                       IMAGE                    COMMAND                  SERVICE    CREATED              STATUS                          PORTS
+aci606-rescue-backend-1    aci606-rescue-backend    "uvicorn main:app --…"   backend    About a minute ago   Up About a minute (unhealthy)   8000/tcp
+aci606-rescue-db-1         postgres:16-alpine       "docker-entrypoint.s…"   db         About a minute ago   Exited (0) About a minute ago   
+aci606-rescue-frontend-1   aci606-rescue-frontend   "/docker-entrypoint.…"   frontend   About a minute ago   Up About a minute (healthy)     0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
