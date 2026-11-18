@@ -1,0 +1,13 @@
+diff --git a/frontend/nginx.conf b/frontend/nginx.conf
+index 6cb3260..82c1767 100644
+--- a/frontend/nginx.conf
++++ b/frontend/nginx.conf
+@@ -10,7 +10,7 @@ server {
+     }
+ 
+     location /api/ {
+-        proxy_pass http://localhost:8000/;
++        proxy_pass http://backend:8000/;
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+     }
