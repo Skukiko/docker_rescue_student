@@ -1,0 +1,18 @@
+$ docker compose up -d backend
+ Container docker_rescue_student-db-1 Running 
+ Container docker_rescue_student-backend-1 Recreated 
+ Container docker_rescue_student-backend-1 Started 
+$ docker compose config | grep DATABASE_URL
+      DATABASE_URL: postgresql://appuser:wrongpass@db:5432/appdb
+$ docker compose ps -a backend
+NAME                              IMAGE                           COMMAND                  SERVICE   CREATED         STATUS                     PORTS
+docker_rescue_student-backend-1   docker_rescue_student-backend   "uvicorn main:app --…"   backend   6 seconds ago   Exited (3) 5 seconds ago   
+$ docker compose logs backend | tail -8
+backend-1  |   File "/usr/local/lib/python3.12/site-packages/psycopg2/__init__.py", line 122, in connect
+backend-1  |     conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+backend-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend-1  | sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "db" (172.18.0.2), port 5432 failed: FATAL:  password authentication failed for user "appuser"
+backend-1  | 
+backend-1  | (Background on this error at: https://sqlalche.me/e/20/e3q8)
+backend-1  | 
+backend-1  | ERROR:    Application startup failed. Exiting.
