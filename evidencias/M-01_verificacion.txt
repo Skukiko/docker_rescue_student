@@ -1,0 +1,55 @@
+### 1) Clon limpio sin .env: valores por defecto
+$ ls .env
+ls: cannot access '.env': No such file or directory
+$ docker compose config | grep -E "DATABASE_URL|POSTGRES_|published"
+      DATABASE_URL: postgresql://appuser:rescue123@db:5432/appdb
+      POSTGRES_DB: appdb
+      POSTGRES_PASSWORD: rescue123
+      POSTGRES_USER: appuser
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+        published: "8080"
+$ docker compose up --build -d
+ Container aci606-rescue-db-1 Healthy 
+ Container aci606-rescue-backend-1 Started 
+$ curl -sS http://localhost:8080/api/health
+{"status":"ok","database":"reachable"}
+$ curl -sS http://localhost:8080/api/items
+[{"id":1,"name":"persistente R-08","created_at":"2026-11-18T15:28:53.526363"}]
+
+### 2) .env con FRONTEND_PORT=8081
+$ echo FRONTEND_PORT=8081 > .env
+$ docker compose up -d
+ Container aci606-rescue-frontend-1 Recreated 
+ Container aci606-rescue-frontend-1 Started 
+$ docker compose ps frontend
+NAME                       IMAGE                    COMMAND                  SERVICE    CREATED         STATUS         PORTS
+aci606-rescue-frontend-1   aci606-rescue-frontend   "/docker-entrypoint.…"   frontend   5 seconds ago   Up 4 seconds   0.0.0.0:8081->80/tcp, [::]:8081->80/tcp
+$ curl -sS -o /dev/null -w "HTTP %{http_code}\n" http://localhost:8081/
+HTTP 200
+$ curl -sS --max-time 3 http://localhost:8080/
+curl: (7) Failed to connect to localhost port 8080 after 0 ms: Couldn't connect to server
+$ git status --short
+ A .env.example
+ A .gitignore
+ A backend/.dockerignore
+ M backend/main.py
+ M compose.yaml
+ A frontend/.dockerignore
+?? evidencias/M-01_diff.txt
+?? evidencias/M-01_verificacion.txt
+$ git check-ignore -v .env
+.gitignore:1:.env	.env
+
+### 3) DATABASE_URL vacía
+$ docker compose run --rm --no-deps -e DATABASE_URL= backend
+  File "/app/main.py", line 10, in <module>
+    raise RuntimeError("La variable de ambiente DATABASE_URL no está definida")
+RuntimeError: La variable de ambiente DATABASE_URL no está definida
+
+$ rm .env && docker compose up -d   (volver a 8080)
+ Container aci606-rescue-frontend-1 Recreated 
+ Container aci606-rescue-frontend-1 Started 
+NAME                       IMAGE                    COMMAND                  SERVICE    CREATED              STATUS                        PORTS
+aci606-rescue-backend-1    aci606-rescue-backend    "uvicorn main:app --…"   backend    18 seconds ago       Up 17 seconds                 8000/tcp
+aci606-rescue-db-1         postgres:16-alpine       "docker-entrypoint.s…"   db         About a minute ago   Up About a minute (healthy)   5432/tcp
+aci606-rescue-frontend-1   aci606-rescue-frontend   "/docker-entrypoint.…"   frontend   5 seconds ago        Up 4 seconds                  0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
