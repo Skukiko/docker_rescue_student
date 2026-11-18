@@ -1,0 +1,26 @@
+digraph final {
+  rankdir=LR;
+  graph [fontname="DejaVu Sans", fontsize=20, nodesep=0.45, ranksep=0.55, pad=0.2,
+         label="Arquitectura final (aci606-rescue). Arranque: ① db → ② backend → ③ frontend", labelloc=t];
+  node  [fontname="DejaVu Sans", fontsize=18, shape=box, style="rounded,filled", fillcolor="#eaf6ec", color="#2e7d32", margin="0.15,0.08"];
+  edge  [fontname="DejaVu Sans", fontsize=16, penwidth=2.5, color="#2e7d32"];
+
+  nav [label="Navegador\n(host)", shape=ellipse, fillcolor="#ffffff", color="#555555"];
+
+  subgraph cluster_net {
+    label="red app_net";
+    style="rounded"; color="#2e7d32"; fontcolor="#2e7d32"; fontsize=18; penwidth=2;
+    fe [label="③ frontend\nNginx :80\nhc: wget /\nresolver 127.0.0.11"];
+    be [label="② backend\nFastAPI :8000\nhc: python /health"];
+    db [label="① db\nPostgreSQL :5432\nhc: pg_isready", shape=cylinder];
+  }
+  vol [label="volumen nombrado\naci606-rescue_pgdata", shape=folder, fillcolor="#e8f0fe", color="#1a56db"];
+  env [label=".env (opcional)\nPOSTGRES_*", shape=note, fillcolor="#fffbe6", color="#b08900"];
+
+  nav -> fe [label="host :8080\n→ :80"];
+  fe -> be  [label="/api/* → /*"];
+  be -> db  [label="@db:5432\n(service_healthy)"];
+  db -> vol [minlen=0, dir=none, color="#1a56db"];
+  env -> be [minlen=0, style=dashed, color="#b08900", penwidth=1.8];
+  env -> db [style=dashed, color="#b08900", penwidth=1.8];
+}
