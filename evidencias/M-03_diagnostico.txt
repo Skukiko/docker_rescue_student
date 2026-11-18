@@ -1,0 +1,20 @@
+$ docker compose stop backend
+ Container aci606-rescue-backend-1 Stopping 
+ Container aci606-rescue-backend-1 Stopped 
+$ docker compose restart frontend
+ Container aci606-rescue-frontend-1 Restarting 
+ Container aci606-rescue-frontend-1 Started 
+$ docker compose ps -a
+NAME                       IMAGE                    COMMAND                  SERVICE    CREATED              STATUS                                  PORTS
+aci606-rescue-backend-1    aci606-rescue-backend    "uvicorn main:app --…"   backend    About a minute ago   Exited (0) 5 seconds ago                
+aci606-rescue-db-1         postgres:16-alpine       "docker-entrypoint.s…"   db         About a minute ago   Up About a minute (healthy)             5432/tcp
+aci606-rescue-frontend-1   aci606-rescue-frontend   "/docker-entrypoint.…"   frontend   About a minute ago   Restarting (1) Less than a second ago   
+$ docker compose logs frontend --since 30s | grep -E "emerg|host not found"
+frontend-1  | nginx: [emerg] host not found in upstream "backend" in /etc/nginx/conf.d/default.conf:13
+frontend-1  | 2026/11/18 15:33:10 [emerg] 1#1: host not found in upstream "backend" in /etc/nginx/conf.d/default.conf:13
+frontend-1  | nginx: [emerg] host not found in upstream "backend" in /etc/nginx/conf.d/default.conf:13
+$ docker inspect --format 'Status={{.State.Status}} RestartCount={{.RestartCount}}' aci606-rescue-frontend-1
+Status=restarting RestartCount=6
+$ curl -sS --max-time 3 -o /dev/null -w "HTTP %{http_code}\n" http://localhost:8080/
+curl: (7) Failed to connect to localhost port 8080 after 0 ms: Couldn't connect to server
+HTTP 000
