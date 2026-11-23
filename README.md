@@ -14,10 +14,9 @@ Navegador ──► frontend (Nginx :80, publicado en ${FRONTEND_PORT:-8080})
 
 Integrantes: José Molina, Christopher Villalobos, Samantha Rojo — ACI606 Cloud Computing, UDLA.
 
-- Diagramas inicial y final: [docs/arquitectura.md](docs/arquitectura.md)
-- Bitácora de cada falla y mejora (síntoma → evidencia → causa → corrección → verificación): [bitacora/README.md](bitacora/README.md)
-- Salidas reales de los comandos: [evidencias/](evidencias/)
-- Enunciado original del profesor: [bitacora/original/README.md](bitacora/original/README.md)
+La bitácora de reparaciones (R-01 a R-08), las mejoras (M-01 a M-05), los diagramas de arquitectura inicial y final
+y la evidencia de las pruebas P1 a P7 están en el **informe técnico (PDF)** entregado junto a este repositorio.
+El historial de commits registra un commit por cada reparación y mejora.
 
 ---
 
@@ -160,6 +159,7 @@ Nginx resuelve `backend` en cada petición, así que no necesita reiniciarse si 
 ├── compose.yaml              # orquestación: servicios, healthchecks, red app_net, volumen pgdata
 ├── .env.example              # plantilla de configuración (copiar a .env)
 ├── .gitignore
+├── .devcontainer/devcontainer.json  # Codespaces con Docker y puerto 8080
 ├── backend/
 │   ├── Dockerfile            # python:3.12-slim + uvicorn main:app, sin root
 │   ├── .dockerignore
@@ -170,10 +170,5 @@ Nginx resuelve `backend` en cada petición, así que no necesita reiniciarse si 
 │   ├── .dockerignore
 │   ├── index.html
 │   └── nginx.conf            # proxy /api/ → ${BACKEND_HOST}:${BACKEND_PORT} + cabeceras de seguridad
-├── scripts/smoke_test.sh     # prueba de extremo a extremo (opción --persistencia)
-├── docs/arquitectura.md      # diagramas inicial y final
-├── bitacora/                 # una ficha por incidencia (R-0X) y mejora (M-0X) + original/
-├── evidencias/               # salidas reales de diagnóstico, verificación y pruebas P1–P7
-├── capturas/                 # captura de la aplicación en el navegador
-└── .devcontainer/devcontainer.json
+└── scripts/smoke_test.sh     # prueba de extremo a extremo (opción --persistencia)
 ```
