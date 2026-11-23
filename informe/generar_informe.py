@@ -235,8 +235,8 @@ for _ in range(3):
 portada = [
     ("Docente: ", "Dr. Oscar Loyola Valenzuela"),
     ("Integrantes: ", "José Molina, Christopher Villalobos, Samantha Rojo"),
-    ("Sección: ", "[SECCIÓN]"),
-    ("Fecha: ", "[FECHA DE ENTREGA]"),
+    ("Sección: ", "401"),
+    ("Fecha: ", "24 de noviembre de 2026"),
     ("Repositorio: ", REPO),
 ]
 for k, v in portada:
@@ -408,7 +408,7 @@ INC = [
     ("R-07", "Nginx reenvía /api/ a localhost", {
         "Incidencia": "La página carga, pero la API responde 502 Bad Gateway.",
         "Síntoma": "GET /api/health → HTTP/1.1 502 Bad Gateway. Según el código de index.html, la página muestra "
-                   "\"Error: Backend no saludable\" [FALTA EVIDENCIA: captura del navegador con ese mensaje].",
+                   "\"Error: Backend no saludable\" (mensaje esperado inferido del código; no verificado visualmente).",
         "Evidencia": "Log de Nginx: connect() failed (111: Connection refused) while connecting to upstream, con upstream "
                      "\"http://127.0.0.1:8000/health\" y \"http://[::1]:8000/health\" (4 veces cada uno). proxy_pass "
                      "http://localhost:8000/ (línea 13). Desde el frontend, wget http://backend:8000/health sí responde.",
@@ -462,7 +462,7 @@ MEJ = [
      "Con DATABASE_URL vacía aparece RuntimeError: La variable de ambiente DATABASE_URL no está definida."),
     ("M-02", "Healthchecks, reinicio y red explícita",
      "Healthcheck del backend con Python (python:3.12-slim no trae curl) contra /health, y del frontend con wget. "
-     "Frontend con depends_on backend service_healthy. restart: unless-stopped y red app_net en los 3 servicios. "
+     "Frontend con depends_on backend service_healthy. La política restart: unless-stopped reinicia el contenedor cuando termina su proceso; el estado unhealthy por sí solo no provoca un reinicio. Los tres servicios comparten la red app_net. "
      "PYTHONDONTWRITEBYTECODE=1 y PYTHONUNBUFFERED=1 en el Dockerfile.",
      "Un servicio \"Up\" no es necesariamente un servicio sano. /health ejecuta SELECT 1, así que mide la API y la base de datos.",
      "El arranque muestra db Healthy → backend Healthy → frontend. ps lista los 3 servicios (healthy). Health del "
@@ -571,7 +571,7 @@ para("Limitaciones:", bold_prefix=None).runs[0].bold = True
 bullet("la contraseña por defecto (rescue123) es visible en .env.example y en compose.yaml. Sirve para la evaluación, "
        "no para producción.")
 bullet("GET /items no captura excepciones en main.py, así que con la base de datos caída respondería 500 en vez de 503. "
-       "Deducido del código; no se ejecutó esa prueba [FALTA EVIDENCIA: salida de GET /api/items con db detenida].")
+       "Limitación inferida por inspección del código; no se ejecutó una prueba específica de GET /api/items con PostgreSQL detenido.")
 bullet("cambiar POSTGRES_PASSWORD no tiene efecto sobre un volumen pgdata ya inicializado (comportamiento documentado "
        "de la imagen postgres; no se probó). Requiere ALTER USER.")
 bullet("no hay backups del volumen, TLS ni réplicas.")
@@ -588,6 +588,12 @@ def rel(msg):
     for tag in ["R-0%d" % i for i in range(1, 9)] + ["M-0%d" % i for i in range(1, 5)]:
         if f"({tag})" in msg:
             return tag
+    if msg.startswith("Initial commit"):
+        return "Inicio del repositorio"
+    if msg.startswith("Add files via upload"):
+        return "Paquete inicial recibido"
+    if msg.startswith("docs: informe técnico"):
+        return "Informe técnico del equipo"
     if msg.startswith("test"):
         return "P1–P6"
     if msg.startswith("chore"):
