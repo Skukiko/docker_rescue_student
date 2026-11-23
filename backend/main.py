@@ -3,9 +3,11 @@ import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
@@ -38,6 +40,13 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="ACI606 Docker Rescue API", version="1.0", lifespan=lifespan)
+
+
+@app.exception_handler(OperationalError)
+async def database_unavailable(_: Request, exc: OperationalError) -> JSONResponse:
+    # Si PostgreSQL no responde, cualquier endpoint devuelve 503 (no 500).
+    logger.warning("Base de datos no disponible: %s", exc.orig)
+    return JSONResponse(status_code=503, content={"detail": "database unavailable"})
 
 
 @app.get("/health")
