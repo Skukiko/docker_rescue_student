@@ -1,0 +1,17 @@
+$ docker compose logs backend | grep -A1 "connection to server"
+backend-1  | psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: Connection refused
+backend-1  | 	Is the server running on that host and accepting TCP/IP connections?
+backend-1  | connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+backend-1  | 	Is the server running on that host and accepting TCP/IP connections?
+
+$ docker compose config | grep DATABASE_URL
+      DATABASE_URL: postgresql://appuser:wrongpass@localhost:5432/appdb
+
+$ docker compose run --rm --entrypoint python backend -c "import socket; print(\"db ->\", socket.gethostbyname(\"db\")); print(\"localhost ->\", socket.gethostbyname(\"localhost\"))"
+db -> 172.18.0.2
+localhost -> 127.0.0.1
+
+$ docker network inspect docker_rescue_student_default --format "{{range .Containers}}{{.Name}} {{.IPv4Address}}{{println}}{{end}}"
+docker_rescue_student-db-1 172.18.0.2/16
+docker_rescue_student-frontend-1 172.18.0.4/16
+

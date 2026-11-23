@@ -1,0 +1,13 @@
+diff --git a/compose.yaml b/compose.yaml
+index a6d8b74..24e6658 100644
+--- a/compose.yaml
++++ b/compose.yaml
+@@ -2,7 +2,7 @@ services:
+   frontend:
+     build: ./frontend
+     ports:
+-      - "8080:8080"
++      - "8080:80"
+     depends_on:
+       - backend
+ 

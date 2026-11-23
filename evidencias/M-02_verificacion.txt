@@ -1,0 +1,52 @@
+$ docker compose down
+ Container aci606-rescue-frontend-1 Removed 
+ Container aci606-rescue-backend-1 Removed 
+ Container aci606-rescue-db-1 Removed 
+$ docker compose up --build -d
+ Network aci606-rescue_app_net Creating 
+ Network aci606-rescue_app_net Creating 
+ Network aci606-rescue_app_net Created 
+ Network aci606-rescue_app_net Created 
+ Container aci606-rescue-db-1 Started 
+ Container aci606-rescue-db-1 Waiting 
+ Container aci606-rescue-db-1 Healthy 
+ Container aci606-rescue-backend-1 Started 
+ Container aci606-rescue-backend-1 Waiting 
+ Container aci606-rescue-backend-1 Healthy 
+ Container aci606-rescue-frontend-1 Started 
+$ docker compose ps
+NAME                       IMAGE                    COMMAND                  SERVICE    CREATED          STATUS                            PORTS
+aci606-rescue-backend-1    aci606-rescue-backend    "uvicorn main:app --…"   backend    15 seconds ago   Up 8 seconds (healthy)            8000/tcp
+aci606-rescue-db-1         postgres:16-alpine       "docker-entrypoint.s…"   db         16 seconds ago   Up 14 seconds (healthy)           5432/tcp
+aci606-rescue-frontend-1   aci606-rescue-frontend   "/docker-entrypoint.…"   frontend   15 seconds ago   Up 3 seconds (health: starting)   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+$ docker inspect --format '{{json .State.Health}}' aci606-rescue-backend-1
+{"Status":"healthy","FailingStreak":0,"Log":[{"Start":"2026-11-18T15:32:14.813907241Z","End":"2026-11-18T15:32:15.147252928Z","ExitCode":0,"Output":""}]}
+
+$ docker inspect --format 'Health={{.State.Health.Status}} Restart={{.HostConfig.RestartPolicy.Name}} Networks={{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' aci606-rescue-backend-1
+Health=healthy Restart=unless-stopped Networks=aci606-rescue_app_net 
+$ docker inspect --format 'Health={{.State.Health.Status}} Restart={{.HostConfig.RestartPolicy.Name}} Networks={{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' aci606-rescue-frontend-1
+Health=starting Restart=unless-stopped Networks=aci606-rescue_app_net 
+$ docker inspect --format 'Health={{.State.Health.Status}} Restart={{.HostConfig.RestartPolicy.Name}} Networks={{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' aci606-rescue-db-1
+Health=healthy Restart=unless-stopped Networks=aci606-rescue_app_net 
+$ docker compose exec backend env | grep PYTHON
+PYTHONDONTWRITEBYTECODE=1
+PYTHONUNBUFFERED=1
+$ docker compose exec backend find /app -name "*.pyc" -o -name __pycache__
+(vacío = sin bytecode)
+$ curl -sS http://localhost:8080/api/health
+{"status":"ok","database":"reachable"}
+$ docker compose ps   (12 s después)
+NAME                       IMAGE                    COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+aci606-rescue-backend-1    aci606-rescue-backend    "uvicorn main:app --…"   backend    33 seconds ago   Up 26 seconds (healthy)   8000/tcp
+aci606-rescue-db-1         postgres:16-alpine       "docker-entrypoint.s…"   db         34 seconds ago   Up 32 seconds (healthy)   5432/tcp
+aci606-rescue-frontend-1   aci606-rescue-frontend   "/docker-entrypoint.…"   frontend   33 seconds ago   Up 20 seconds (healthy)   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+$ docker inspect --format '{{json .State.Health}}' aci606-rescue-frontend-1
+{"Status":"healthy","FailingStreak":0,"Log":[{"Start":"2026-11-18T15:32:25.51541711Z","End":"2026-11-18T15:32:25.56166826Z","ExitCode":0,"Output":""},{"Start":"2026-11-18T15:32:35.562314873Z","End":"2026-11-18T15:32:35.630413442Z","ExitCode":0,"Output":""}]}
+
+$ docker network ls
+NETWORK ID     NAME                    DRIVER    SCOPE
+b77adb3d136a   aci606-rescue_app_net   bridge    local
+c87537067574   aci606-rescue_default   bridge    local
+fb9bb83014bb   bridge                  bridge    local
+bd402133e64d   host                    host      local
+aa9b5b016a87   none                    null      local

@@ -1,0 +1,16 @@
+$ docker compose up -d backend
+ Container docker_rescue_student-db-1 Running 
+ Container docker_rescue_student-backend-1 Recreated 
+ Container docker_rescue_student-backend-1 Started 
+$ docker compose ps -a
+NAME                               IMAGE                            COMMAND                  SERVICE    CREATED         STATUS         PORTS
+docker_rescue_student-backend-1    docker_rescue_student-backend    "uvicorn main:app --…"   backend    6 seconds ago   Up 6 seconds   8000/tcp
+docker_rescue_student-db-1         postgres:16-alpine               "docker-entrypoint.s…"   db         2 minutes ago   Up 2 minutes   5432/tcp
+docker_rescue_student-frontend-1   docker_rescue_student-frontend   "/docker-entrypoint.…"   frontend   2 minutes ago   Up 2 minutes   80/tcp, 0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+$ docker compose logs backend
+backend-1  | INFO:     Started server process [1]
+backend-1  | INFO:     Waiting for application startup.
+backend-1  | INFO:     Application startup complete.
+backend-1  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+$ docker compose exec backend python -c "import urllib.request; print(urllib.request.urlopen(\"http://127.0.0.1:8000/health\").read().decode())"
+{"status":"ok","database":"reachable"}

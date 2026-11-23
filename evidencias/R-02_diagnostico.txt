@@ -1,0 +1,12 @@
+$ docker compose logs backend | tail -3
+backend-1  |   File "/usr/local/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/psycopg2.py", line 690, in import_dbapi
+backend-1  |     import psycopg2
+backend-1  | ModuleNotFoundError: No module named 'psycopg2'
+
+$ docker compose run --rm --entrypoint pip backend list | grep -i -E "sqlalchemy|psycopg"
+SQLAlchemy        2.0.36
+
+$ cat backend/requirements.txt
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+SQLAlchemy==2.0.36

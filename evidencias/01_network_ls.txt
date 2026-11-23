@@ -1,0 +1,5 @@
+NETWORK ID     NAME                            DRIVER    SCOPE
+fb9bb83014bb   bridge                          bridge    local
+8966890aaef7   docker_rescue_student_default   bridge    local
+bd402133e64d   host                            host      local
+aa9b5b016a87   none                            null      local

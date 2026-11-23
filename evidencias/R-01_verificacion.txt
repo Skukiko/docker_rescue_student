@@ -1,0 +1,27 @@
+$ docker compose up --build -d backend
+ Image docker_rescue_student-backend Built 
+ Container docker_rescue_student-db-1 Running 
+ Container docker_rescue_student-backend-1 Started 
+$ docker compose ps -a
+NAME                               IMAGE                            COMMAND                  SERVICE    CREATED          STATUS                     PORTS
+docker_rescue_student-backend-1    docker_rescue_student-backend    "uvicorn main:app --…"   backend    6 seconds ago    Exited (1) 5 seconds ago   
+docker_rescue_student-db-1         postgres:16-alpine               "docker-entrypoint.s…"   db         30 seconds ago   Up 26 seconds              5432/tcp
+docker_rescue_student-frontend-1   docker_rescue_student-frontend   "/docker-entrypoint.…"   frontend   27 seconds ago   Up 26 seconds              80/tcp, 0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+$ docker inspect --format '{{.Config.Cmd}}' docker_rescue_student-backend-1
+[uvicorn main:app --host 0.0.0.0 --port 8000]
+$ docker compose logs backend
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+backend-1  |   File "/app/main.py", line 13, in <module>
+backend-1  |     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+backend-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend-1  |   File "<string>", line 2, in create_engine
+backend-1  |   File "/usr/local/lib/python3.12/site-packages/sqlalchemy/util/deprecations.py", line 281, in warned
+backend-1  |     return fn(*args, **kwargs)  # type: ignore[no-any-return]
+backend-1  |            ^^^^^^^^^^^^^^^^^^^
+backend-1  |   File "/usr/local/lib/python3.12/site-packages/sqlalchemy/engine/create.py", line 599, in create_engine
+backend-1  |     dbapi = dbapi_meth(**dbapi_args)
+backend-1  |             ^^^^^^^^^^^^^^^^^^^^^^^^
+backend-1  |   File "/usr/local/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/psycopg2.py", line 690, in import_dbapi
+backend-1  |     import psycopg2
+backend-1  | ModuleNotFoundError: No module named 'psycopg2'
