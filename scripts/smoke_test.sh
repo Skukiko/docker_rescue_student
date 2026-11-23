@@ -1,25 +1,48 @@
 #!/usr/bin/env bash
-# Prueba rápida: verifica frontend, API (vía proxy Nginx) y base de datos.
-# Uso: ./scripts/smoke_test.sh   (con los servicios levantados: docker compose up --build -d)
+# Prueba de extremo a extremo: frontend -> Nginx -> FastAPI -> PostgreSQL.
+#
+# Uso (desde la raíz, con los servicios levantados):
+#   ./scripts/smoke_test.sh                 pruebas funcionales
+#   ./scripts/smoke_test.sh --persistencia  además recrea los contenedores y
+#                                           comprueba que el registro sigue ahí
 set -euo pipefail
+cd "$(dirname "$0")/.."
 
+# Usa el mismo puerto que compose.yaml si existe un .env
+if [[ -f .env ]]; then set -a; source ./.env; set +a; fi
 BASE_URL="${BASE_URL:-http://localhost:${FRONTEND_PORT:-8080}}"
-fail() { echo "FALLO: $*" >&2; exit 1; }
+NAME="smoke-$(date +%s)"
 
-echo "1) Frontend en $BASE_URL/"
+ok()   { printf '  \033[32m✔\033[0m %s\n' "$*"; }
+fail() { printf '  \033[31m✘ %s\033[0m\n' "$*" >&2; exit 1; }
+json() { python3 -c "import json,sys; d=json.load(sys.stdin); $1"; }
+
+echo "Probando $BASE_URL"
+
 code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL/")
-[ "$code" = "200" ] || fail "frontend respondió $code"
+[[ "$code" == 200 ]] && ok "Frontend responde 200" || fail "Frontend respondió $code"
 
-echo "2) Salud del backend y la base de datos"
-health=$(curl -s "$BASE_URL/api/health")
-echo "$health" | grep -q '"reachable"' || fail "/api/health: $health"
+health=$(curl -sf "$BASE_URL/api/health") || fail "/api/health no responde 200"
+echo "$health" | json 'assert d=={"status":"ok","database":"reachable"}, d' \
+  && ok "Backend y PostgreSQL: $health" || fail "/api/health: $health"
 
-echo "3) Crear un registro"
-name="smoke-$(date +%s)"
-curl -s -f -X POST "$BASE_URL/api/items" \
-     -H 'Content-Type: application/json' -d "{\"name\":\"$name\"}" > /dev/null || fail "POST /api/items"
+created=$(curl -sf -X POST "$BASE_URL/api/items" \
+  -H 'Content-Type: application/json' -d "{\"name\":\"$NAME\"}") || fail "POST /api/items"
+id=$(echo "$created" | json 'print(d["id"])')
+ok "Registro creado (id $id)"
 
-echo "4) Listar registros"
-curl -s -f "$BASE_URL/api/items" | grep -q "$name" || fail "el registro $name no aparece"
+has_item() { curl -sf "$BASE_URL/api/items" | json "assert any(i['id']==$id for i in d)"; }
+has_item && ok "El registro aparece en GET /api/items" || fail "El registro $id no aparece"
+
+code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE_URL/api/items" \
+  -H 'Content-Type: application/json' -d '{"name":""}')
+[[ "$code" == 422 ]] && ok "Nombre vacío rechazado (422)" || fail "Nombre vacío devolvió $code"
+
+if [[ "${1:-}" == "--persistencia" ]]; then
+  echo "Recreando contenedores (docker compose down / up)..."
+  docker compose down >/dev/null 2>&1
+  docker compose up -d --wait >/dev/null 2>&1 || fail "Los servicios no quedaron healthy"
+  has_item && ok "El registro $id sobrevivió a down/up" || fail "Se perdió el registro $id"
+fi
 
 echo "OK: todas las pruebas pasaron"

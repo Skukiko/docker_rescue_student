@@ -78,10 +78,11 @@ Abra http://localhost:8080 (en Codespaces: pestaña **Ports** → 8080).
 
 ## 4. Verificar
 
-Prueba automática (frontend, `/api/health`, crear y listar registros):
+Prueba automática (frontend, `/api/health`, crear, listar y validar registros):
 
 ```bash
-./scripts/smoke_test.sh
+./scripts/smoke_test.sh                  # pruebas funcionales
+./scripts/smoke_test.sh --persistencia   # además recrea los contenedores y verifica que los datos sigan
 ```
 
 O manualmente:
@@ -132,7 +133,7 @@ docker volume inspect aci606-rescue_pgdata
 |---|---|
 | Un servicio no figura `healthy` | `docker compose ps -a` · `docker compose logs <servicio>` · `docker inspect --format '{{json .State.Health}}' aci606-rescue-<servicio>-1` |
 | `/api/...` responde **502** | El backend está detenido o no resuelve: `docker compose ps backend`, `docker compose logs frontend \| grep error` |
-| `/api/health` responde **503** | El backend funciona pero no alcanza PostgreSQL: `docker compose ps db`, `docker compose logs db` |
+| `/api/...` responde **503** | El backend funciona pero no alcanza PostgreSQL: `docker compose ps db`, `docker compose logs db` |
 | `password authentication failed` | `.env` y la contraseña guardada en el volumen no coinciden (ver nota de la sección 2) |
 | `RuntimeError: ... DATABASE_URL no está definida` | El backend arrancó sin `DATABASE_URL`: `docker compose config \| grep DATABASE_URL` |
 | No responde en el puerto del host | `docker compose ps frontend` (columna PORTS) y `FRONTEND_PORT` en `.env` |
