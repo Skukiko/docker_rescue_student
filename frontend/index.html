@@ -22,7 +22,7 @@
   <div class="status" id="status">Comprobando backend...</div>
 
   <form id="itemForm">
-    <input id="name" placeholder="Nombre del registro" required />
+    <input id="name" placeholder="Nombre del registro" maxlength="80" required />
     <button type="submit">Guardar</button>
   </form>
 
@@ -61,17 +61,17 @@
       const name = nameInput.value.trim();
       if (!name) return;
 
-      const res = await fetch('/api/items', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name})
-      });
-
-      if (res.ok) {
+      try {
+        const res = await fetch('/api/items', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({name})
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         nameInput.value = '';
         await loadItems();
-      } else {
-        statusEl.textContent = 'Error al guardar el registro';
+      } catch (err) {
+        statusEl.textContent = `Error al guardar el registro: ${err.message}`;
       }
     });
 

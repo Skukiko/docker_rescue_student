@@ -1,5 +1,7 @@
+import logging
 import os
-from datetime import datetime
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -9,16 +11,15 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("La variable de ambiente DATABASE_URL no está definida")
 
+logger = logging.getLogger("uvicorn.error")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-app = FastAPI(title="ACI606 Docker Rescue API", version="1.0")
 
 
 class ItemIn(BaseModel):
     name: str = Field(min_length=1, max_length=80)
 
 
-@app.on_event("startup")
-def startup() -> None:
+def create_schema() -> None:
     with engine.begin() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS items (
@@ -29,6 +30,16 @@ def startup() -> None:
         """))
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    create_schema()
+    yield
+    engine.dispose()
+
+
+app = FastAPI(title="ACI606 Docker Rescue API", version="1.0", lifespan=lifespan)
+
+
 @app.get("/health")
 def health():
     try:
@@ -36,7 +47,9 @@ def health():
             conn.execute(text("SELECT 1"))
         return {"status": "ok", "database": "reachable"}
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"database unavailable: {exc}")
+        # El detalle va al log del contenedor, no a la respuesta pública.
+        logger.warning("Healthcheck: base de datos no disponible: %s", exc)
+        raise HTTPException(status_code=503, detail="database unavailable")
 
 
 @app.get("/items")
@@ -62,5 +75,5 @@ def create_item(item: ItemIn):
 def root():
     return {
         "service": "ACI606 Docker Rescue API",
-        "time": datetime.utcnow().isoformat() + "Z",
+        "time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
