@@ -14,11 +14,6 @@ Navegador ──► frontend (Nginx :80, publicado en ${FRONTEND_PORT:-8080})
 
 Integrantes: José Molina, Christopher Villalobos, Samantha Rojo — ACI606 Cloud Computing, UDLA.
 
-- Diagramas inicial y final: [docs/arquitectura.md](docs/arquitectura.md)
-- Bitácora de cada falla y mejora (síntoma → evidencia → causa → corrección → verificación): [bitacora/README.md](bitacora/README.md)
-- Salidas reales de los comandos: [evidencias/](evidencias/)
-- Enunciado original del profesor: [bitacora/original/README.md](bitacora/original/README.md)
-
 ---
 
 ## 1. Requisitos
@@ -29,8 +24,7 @@ Integrantes: José Molina, Christopher Villalobos, Samantha Rojo — ACI606 Clou
 | Docker Compose (plugin v2) | v5.x | `docker compose version` |
 | curl (para verificar) | cualquiera | `curl --version` |
 
-También funciona en **GitHub Codespaces**: el repositorio incluye [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)
-(imagen `mcr.microsoft.com/devcontainers/universal:2`, que trae Docker, y reenvío del puerto 8080).
+También funciona en **GitHub Codespaces** (Docker ya viene instalado).
 
 ## 2. Configuración
 
@@ -83,6 +77,14 @@ aci606-rescue-frontend-1   frontend   Up ... (healthy)          0.0.0.0:8080->80
 Abra http://localhost:8080 (en Codespaces: pestaña **Ports** → 8080).
 
 ## 4. Verificar
+
+Prueba automática (frontend, `/api/health`, crear y listar registros):
+
+```bash
+./scripts/smoke_test.sh
+```
+
+O manualmente:
 
 ```bash
 # Página estática
@@ -139,7 +141,7 @@ docker volume inspect aci606-rescue_pgdata
 
 Todos los servicios usan `restart: unless-stopped`. Esta política reinicia un contenedor
 cuando termina su proceso, pero no cuando solamente cambia a estado `unhealthy`.
-En P4-P6 se comprobó que, al detener PostgreSQL, el healthcheck del backend falla y,
+Al detener PostgreSQL, el healthcheck del backend falla y,
 cuando se inicia nuevamente la base de datos, el mismo backend vuelve a `healthy`
 sin reiniciarse (RestartCount=0 y mismo StartedAt).
 Nginx resuelve `backend` en cada petición, así que no necesita reiniciarse si el backend se recrea.
@@ -148,21 +150,19 @@ Nginx resuelve `backend` en cada petición, así que no necesita reiniciarse si 
 
 ```
 .
-├── compose.yaml              # orquestación: servicios, healthchecks, red app_net, volumen pgdata
-├── .env.example              # plantilla de configuración (copiar a .env)
-├── .gitignore
 ├── backend/
 │   ├── Dockerfile            # python:3.12-slim + uvicorn main:app
-│   ├── .dockerignore
 │   ├── main.py               # API FastAPI: /health, /items
 │   └── requirements.txt
 ├── frontend/
 │   ├── Dockerfile            # nginx:1.27-alpine; nginx.conf como plantilla envsubst
-│   ├── .dockerignore
 │   ├── index.html
 │   └── nginx.conf            # proxy /api/ → ${BACKEND_HOST}:${BACKEND_PORT}
-├── docs/arquitectura.md      # diagramas inicial y final
-├── bitacora/                 # una ficha por incidencia (R-0X) y mejora (M-0X) + original/
-├── evidencias/               # salidas reales de diagnóstico, verificación y pruebas P1–P6
-└── .devcontainer/devcontainer.json
+├── scripts/
+│   └── smoke_test.sh         # prueba rápida de extremo a extremo
+├── .dockerignore
+├── .env.example              # plantilla de configuración (copiar a .env)
+├── .gitignore
+├── README.md
+└── compose.yaml              # servicios, healthchecks, red app_net, volumen pgdata
 ```
