@@ -137,7 +137,11 @@ docker volume inspect aci606-rescue_pgdata
 | Ver la config real de Nginx | `docker compose exec frontend cat /etc/nginx/conf.d/default.conf` |
 | Configuración final de Compose | `docker compose config` |
 
-Todos los servicios usan `restart: unless-stopped` y se recuperan solos cuando vuelve su dependencia;
+Todos los servicios usan `restart: unless-stopped`. Esta política reinicia un contenedor
+cuando termina su proceso, pero no cuando solamente cambia a estado `unhealthy`.
+En P4-P6 se comprobó que, al detener PostgreSQL, el healthcheck del backend falla y,
+cuando se inicia nuevamente la base de datos, el mismo backend vuelve a `healthy`
+sin reiniciarse (RestartCount=0 y mismo StartedAt).
 Nginx resuelve `backend` en cada petición, así que no necesita reiniciarse si el backend se recrea.
 
 ## 8. Estructura
