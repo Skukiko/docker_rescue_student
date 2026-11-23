@@ -34,6 +34,7 @@ reales de los comandos están en [`../evidencias/`](../evidencias/). El paquete 
 | [M-02](M-02.md) | "Up" ≠ sano; sin reinicio automático | Healthchecks de backend (Python) y frontend (wget), `restart: unless-stopped`, red `app_net`, `PYTHONUNBUFFERED`/`PYTHONDONTWRITEBYTECODE` | `compose.yaml`, `backend/Dockerfile` | `af9fff7` |
 | [M-03](M-03.md) | Con el backend detenido, Nginx no arranca (`host not found in upstream`) y entra en bucle | `resolver 127.0.0.11`, destino por variables `BACKEND_HOST`/`BACKEND_PORT` vía plantilla envsubst | `frontend/nginx.conf`, `frontend/Dockerfile`, `compose.yaml` | `bd818be` |
 | [M-04](M-04.md) | Sin documentación operativa | README reproducible, `docs/arquitectura.md` (mermaid inicial y final), `.devcontainer/devcontainer.json` | `README.md`, `docs/arquitectura.md`, `.devcontainer/devcontainer.json` | `4b36d62` |
+| [M-05](M-05.md) | `GET /items` → 500 con la base de datos caída; `/health` expone el error interno; APIs obsoletas; backend como `root`; Nginx revela su versión | Manejador global de `OperationalError` (503), `lifespan`, `USER appuser`, `server_tokens off` y cabeceras de seguridad, `maxlength=80`, `scripts/smoke_test.sh` | `backend/main.py`, `backend/Dockerfile`, `frontend/nginx.conf`, `frontend/index.html`, `scripts/smoke_test.sh` | `8ab6044`, `6386c32`, `f8cb8a9` |
 
 ## Pruebas de validación (commit `768d438`)
 

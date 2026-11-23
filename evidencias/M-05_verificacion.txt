@@ -1,0 +1,64 @@
+### Versión con M-05 (rama fix/informe-entrega-final), puerto 8080
+$ docker compose up --build -d && docker compose ps
+SERVICE    STATUS                   PORTS
+backend    Up 8 minutes (healthy)   8000/tcp
+db         Up 8 minutes (healthy)   5432/tcp
+frontend   Up 6 minutes (healthy)   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+
+### 1) El backend corre sin privilegios
+$ docker compose exec backend id
+uid=999(appuser) gid=999(appuser) groups=999(appuser)
+
+### 2) Nginx oculta su versión y envía cabeceras de seguridad
+$ curl -sI http://localhost:8080/ | grep -iE "^(server|x-content-type|x-frame|referrer)"
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+$ docker compose exec frontend nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+### 3) Sin APIs obsoletas en backend/main.py
+$ grep -n -E "on_event|utcnow|lifespan|timezone.utc" backend/main.py
+36:async def lifespan(_: FastAPI):
+42:app = FastAPI(title="ACI606 Docker Rescue API", version="1.0", lifespan=lifespan)
+87:        "time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+$ curl -s http://localhost:8080/api/
+{"service":"ACI606 Docker Rescue API","time":"2026-11-23T22:37:30+00:00"}
+
+### 4) Smoke test (crear, listar, validar, persistencia tras down/up)
+$ ./scripts/smoke_test.sh --persistencia
+Probando http://localhost:8080
+  ✔ Frontend responde 200
+  ✔ Backend y PostgreSQL: {"status":"ok","database":"reachable"}
+  ✔ Registro creado (id 5)
+  ✔ El registro aparece en GET /api/items
+  ✔ Nombre vacío rechazado (422)
+Recreando contenedores (docker compose down / up)...
+  ✔ El registro 5 sobrevivió a down/up
+OK: todas las pruebas pasaron
+
+### 5) Fallo controlado: PostgreSQL detenido
+$ docker compose stop db
+ Container aci606-rescue-db-1 Stopping 
+ Container aci606-rescue-db-1 Stopped 
+$ curl -s -w " HTTP %{http_code}\n" http://localhost:8080/api/health
+{"detail":"database unavailable"} HTTP 503
+$ curl -s -w " HTTP %{http_code}\n" http://localhost:8080/api/items
+{"detail":"database unavailable"} HTTP 503
+$ docker compose logs backend --since 30s | grep -E "WARNING|GET /items"
+backend-1  | WARNING:  Healthcheck: base de datos no disponible: (psycopg2.OperationalError) could not translate host name "db" to address: Name or service not known
+backend-1  | INFO:     172.19.0.4:54692 - "GET /items HTTP/1.0" 503 Service Unavailable
+backend-1  | WARNING:  Base de datos no disponible: could not translate host name "db" to address: Name or service not known
+
+### 6) Recuperación
+$ docker compose start db
+ Container aci606-rescue-db-1 Starting 
+ Container aci606-rescue-db-1 Started 
+$ curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:8080/api/items
+HTTP 200
+
+### 7) Frontend limita el nombre a 80 caracteres, igual que el backend
+$ grep -n "<input" frontend/index.html
+25:    <input id="name" placeholder="Nombre del registro" maxlength="80" required />
