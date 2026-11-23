@@ -152,13 +152,13 @@ Nginx resuelve `backend` en cada petición, así que no necesita reiniciarse si 
 ```
 .
 ├── backend/
-│   ├── Dockerfile            # python:3.12-slim + uvicorn main:app
+│   ├── Dockerfile            # python:3.12-slim + uvicorn main:app, sin root
 │   ├── main.py               # API FastAPI: /health, /items
 │   └── requirements.txt
 ├── frontend/
 │   ├── Dockerfile            # nginx:1.27-alpine; nginx.conf como plantilla envsubst
 │   ├── index.html
-│   └── nginx.conf            # proxy /api/ → ${BACKEND_HOST}:${BACKEND_PORT}
+│   └── nginx.conf            # proxy /api/ → ${BACKEND_HOST}:${BACKEND_PORT} + cabeceras de seguridad
 ├── scripts/
 │   └── smoke_test.sh         # prueba rápida de extremo a extremo
 ├── .dockerignore
